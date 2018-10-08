@@ -1,6 +1,7 @@
 """Class for interacting with the Imgur API"""
 import requests
 import os
+import errno
 import json
 
 class ImgurJSON:
@@ -40,14 +41,26 @@ class ImgurJSON:
 
     def downloadImages(self, filepath):
         image_urls = self.__getImageList()
+        album_name = self.__getAlbumNameFromURL(self.web_url)
         for url in image_urls:
+            # https://imgur.com/a/mo1YAnL
             last_slash = str(url).rindex('/')
             filename = str(url)[last_slash + 1:]
-            album_name = self.json_url[last_slash + 1]
-            filepath = r"{0}\{1}".format(filepath, album_name)
-            with open(r"{0}\{1}".format(filepath, filename), "wb") as image:
+            try:
+                os.makedirs(r"{0}\{1}".format(filepath, album_name))
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    raise
+            final_filepath = r"{0}\{1}".format(filepath, album_name)
+            with open(r"{0}/{1}".format(final_filepath, filename), "wb") as image:
                 image.write(requests.get(url).content)
-                
+
+    def __getAlbumNameFromURL(self, url):
+        """Retrieves album name from url"""
+        parts = url.split('/')    
+        album = parts[len(parts) - 1]
+        return album
+    
     def __getImageList(self):
         """Retrieves the URLs from the returned JSON"""
         if self.album_json is not None:

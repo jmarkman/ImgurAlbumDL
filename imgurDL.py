@@ -2,6 +2,9 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+import queue
+import threading
+import time
 import os
 import re
 import ImgurAlbum
@@ -48,6 +51,8 @@ class GUI:
                 imgurAlbum.getAlbumJSON()
                 if imgurAlbum.isAccessible():
                     imgurAlbum.downloadImages(os.getcwd())
+                    self.album_input.delete(0, 'end')
+                    messagebox.showinfo(title="Success", message="The album was downloaded successfully!")
                 else:
                     messagebox.showwarning(message="Something happened")
             except:
@@ -55,6 +60,12 @@ class GUI:
         else:
             messagebox.showwarning(message="The url supplied is not valid!")
             self.album_input.delete(0, 'end')
+
+class ThreadedClient:
+    def __init__(self, master_window):
+        self.master = master_window
+        self.queue = queue.Queue()
+        self.gui = 
 
 def launch():
     GUI()
